@@ -3,10 +3,12 @@
   import FoodSymbol from "./symbol/FoodSymbol.svelte";
   import FoodSymbolEditor from "./FoodSymbolEditor.svelte";
   import { writable, type Writable } from "svelte/store";
+  import { onMount, onDestroy } from "svelte";
 
   export let menuData: MonthlyMenuDto;
   let activeFood: FoodData | undefined = undefined;
   let height: string = "120px";
+  let floatingMenuElement: HTMLDivElement;
 
   const floatingMenu: Writable<{
     left: string;
@@ -34,6 +36,23 @@
     $floatingMenu.top = `${rect.bottom + 8}px`;
     $floatingMenu.visible = true;
   }
+
+  function handleClickOutside(event: MouseEvent) {
+    if (
+      floatingMenuElement &&
+      !floatingMenuElement.contains(event.target as Node)
+    ) {
+      hideFloatingMenu();
+    }
+  }
+
+  onMount(() => {
+    document.addEventListener("click", handleClickOutside, true);
+  });
+
+  onDestroy(() => {
+    document.removeEventListener("click", handleClickOutside, true);
+  });
 </script>
 
 <div class="container-fluid py-5">
@@ -77,6 +96,7 @@
   <div
     class="floating-menu"
     style="left: {$floatingMenu.left}; top:{$floatingMenu.top}"
+    bind:this={floatingMenuElement}
   >
     <FoodSymbolEditor food={activeFood} on:close={hideFloatingMenu} />
   </div>

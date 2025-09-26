@@ -11,11 +11,13 @@
 
   const images: Writable<PicSource[]> = writable([]);
   async function searchSymbol(keyword: string) {
+    $images = [];
     const symbols = await greamApi.searchSymbol(keyword);
     $images = symbols;
   }
+  $: searchSymbol(food.foodName);
   onMount(() => {
-    searchSymbol(food.foodName);
+    // searchSymbol(food.foodName);
   });
 </script>
 
@@ -32,21 +34,6 @@
     {#each $images as symbol}
       <Symbol src={symbol.getUrl()} alt={symbol.picName} width="75px" />
     {/each}
-    <!-- <Symbol
-      src="https://kr.object.ncloudstorage.com/aacweb/symbols/after/Ara/1e39f117-bc7a-4bad-84dd-7e26a744dfd8.png"
-      alt="토요일"
-      width="75px"
-    />
-    <Symbol
-      src="https://kr.object.ncloudstorage.com/aacweb/symbols/after/ArE/38b73514-5518-4822-a634-e6bcafad9d86.png"
-      alt="토요일"
-      width="75px"
-    />
-    <Symbol
-      src="https://kr.object.ncloudstorage.com/aacweb/symbols/after/Tesis/c19a6254-6ec2-4eb1-977a-1a9bb9440467.png"
-      alt="토요일"
-      width="75px"
-    /> -->
     <button class="imgGroup reg-symbol">
       <span class="center-icon material-icons">add</span>
     </button>
