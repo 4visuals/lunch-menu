@@ -1,19 +1,37 @@
 <script lang="ts">
   import { createEventDispatcher } from "svelte";
   import Symbol from "./Symbol.svelte";
-  let dispatch = createEventDispatcher<{ menu: string }>();
-  export let menuName: string;
+  import type { FoodData } from "../daily-menu";
+  let dispatch = createEventDispatcher<{
+    menu: { food: FoodData; rect: DOMRect };
+  }>();
+  export let food: FoodData;
+  export let activeFood: FoodData | undefined;
+  let buttonEl: HTMLButtonElement;
 </script>
 
-<button on:click={() => dispatch("menu", menuName)}>
+<button
+  bind:this={buttonEl}
+  class:active={food === activeFood}
+  on:click={() =>
+    dispatch("menu", {
+      food,
+      rect: buttonEl.getBoundingClientRect(),
+    })}
+>
   <Symbol />
-  <span class="name">{menuName}</span>
+  <span class="name">{food.foodName}</span>
 </button>
 
 <style lang="scss">
   button {
     position: relative;
     border: none;
+    background-color: transparent;
+    &.active {
+      border-radius: 8px;
+      box-shadow: 0 0 0 2px #007bff;
+    }
     .name {
       position: absolute;
       left: 50%;

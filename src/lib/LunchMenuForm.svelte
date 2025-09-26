@@ -1,9 +1,39 @@
 <script lang="ts">
-  import type { DailyMenu, MonthlyMenuDto } from "./daily-menu";
+  import type { FoodData, MonthlyMenuDto } from "./daily-menu";
   import FoodSymbol from "./symbol/FoodSymbol.svelte";
+  import FoodSymbolEditor from "./FoodSymbolEditor.svelte";
+  import { writable, type Writable } from "svelte/store";
 
   export let menuData: MonthlyMenuDto;
+  let activeFood: FoodData | undefined = undefined;
   let height: string = "120px";
+
+  const floatingMenu: Writable<{
+    left: string;
+    top: string;
+    visible: boolean;
+  }> = writable({
+    left: "",
+    top: "",
+    visible: false,
+  });
+
+  function hideFloatingMenu() {
+    floatingMenu.update((store) => {
+      store.visible = false;
+      store.left = "";
+      store.top = "";
+      return store;
+    });
+  }
+  function showFoodEditor(e: CustomEvent<{ food: FoodData; rect: DOMRect }>) {
+    const { food, rect } = e.detail;
+    activeFood = food;
+
+    $floatingMenu.left = `${rect.left}px`;
+    $floatingMenu.top = `${rect.bottom + 8}px`;
+    $floatingMenu.visible = true;
+  }
 </script>
 
 <div class="container-fluid py-5">
@@ -29,13 +59,28 @@
         <tr>
           <td class="dom">{dailyMenu.day} ({dailyMenu.dayOfWeek})</td>
           {#each dailyMenu.menus as menu}
-            <td class="food"><FoodSymbol menuName={menu} /></td>
+            <td class="food"
+              ><FoodSymbol
+                {activeFood}
+                food={menu}
+                on:menu={showFoodEditor}
+              /></td
+            >
           {/each}
         </tr>
       {/each}
     </tbody>
   </table>
 </div>
+
+{#if $floatingMenu.visible && activeFood}
+  <div
+    class="floating-menu"
+    style="left: {$floatingMenu.left}; top:{$floatingMenu.top}"
+  >
+    <FoodSymbolEditor food={activeFood} on:close={hideFloatingMenu} />
+  </div>
+{/if}
 
 <style lang="scss">
   table.table {
@@ -49,5 +94,9 @@
         }
       }
     }
+  }
+  .floating-menu {
+    position: absolute;
+    z-index: 100;
   }
 </style>

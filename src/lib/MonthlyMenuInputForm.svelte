@@ -1,6 +1,6 @@
 <script lang="ts">
   import { createEventDispatcher } from "svelte";
-  import type { DailyMenu, MonthlyMenuDto } from "./daily-menu";
+  import type { DailyMenu, MonthlyMenuDto, FoodData } from "./daily-menu";
   import { Y202510 } from "./dummy-data";
 
   const dispatch = createEventDispatcher<{
@@ -16,7 +16,7 @@
   const years = [currentYear, currentYear + 1];
 
   function convert() {
-    const menus: DailyMenu[] = menuText
+    const menus = menuText
       .trim()
       .split("\n")
       .map((line) => {
@@ -33,7 +33,10 @@
         const dayOfWeek = parts.shift();
         if (!dayOfWeek) return null;
 
-        const menus = parts;
+        const menus: FoodData[] = parts.map((foodName) => ({
+          uuid: crypto.randomUUID(),
+          foodName,
+        }));
 
         if (menus.length < 6 || menus.length > 8) {
           console.warn(
