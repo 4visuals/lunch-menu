@@ -6,7 +6,15 @@
   import { writable, type Writable } from "svelte/store";
   import type { PicSource } from "./api/gream-type";
   export let food: FoodData;
-  const dispatch = createEventDispatcher();
+  export let weekIndex: number;
+  export let flushAll: boolean;
+  export let sameMenus: FoodData[] = [];
+  const dispatch = createEventDispatcher<{
+    close: void;
+    choose: { picture: PicSource; weekIndex: number };
+    "flush-state": boolean;
+    "add-picture": void;
+  }>();
   const close = () => dispatch("close");
 
   const images: Writable<PicSource[]> = writable([]);
@@ -15,10 +23,15 @@
     const symbols = await greamApi.searchSymbol(keyword);
     $images = symbols;
   }
+
+  function flush(e: Event) {
+    dispatch("flush-state", (e.target as HTMLInputElement)!.checked);
+  }
   $: searchSymbol(food.foodName);
-  onMount(() => {
-    // searchSymbol(food.foodName);
-  });
+
+  function symbolClicked(picture: PicSource): void {
+    dispatch("choose", { picture, weekIndex });
+  }
 </script>
 
 <svelte:window on:keydown={(e) => e.key === "Escape" && close()} />
@@ -30,11 +43,31 @@
       <button class="btn btn-primary">Search</button>
     </div>
   </div>
+  <div class="same-menus">
+    <span>{sameMenus.length}개</span>
+    <span
+      ><label for="flush-all"
+        ><input
+          id="flush-all"
+          type="checkbox"
+          checked={flushAll}
+          on:change={flush}
+        /><span>모두 적용</span></label
+      ></span
+    >
+  </div>
   <div class="symbols">
     {#each $images as symbol}
-      <Symbol src={symbol.getUrl()} alt={symbol.picName} width="75px" />
+      <Symbol
+        picture={symbol}
+        width="75px"
+        on:click={() => symbolClicked(symbol)}
+      />
     {/each}
-    <button class="imgGroup reg-symbol">
+    <button
+      class="imgGroup reg-symbol"
+      on:click={() => dispatch("add-picture")}
+    >
       <span class="center-icon material-icons">add</span>
     </button>
   </div>

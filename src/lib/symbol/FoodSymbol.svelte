@@ -1,10 +1,11 @@
 <script lang="ts">
   import { createEventDispatcher } from "svelte";
   import Symbol from "./Symbol.svelte";
-  import type { FoodData } from "../daily-menu";
+  import type { DailyMenu, FoodData } from "../daily-menu";
   let dispatch = createEventDispatcher<{
     menu: { food: FoodData; rect: DOMRect };
   }>();
+  export let dailyMenu: DailyMenu;
   export let food: FoodData;
   export let activeFood: FoodData | undefined;
   let buttonEl: HTMLButtonElement;
@@ -19,7 +20,7 @@
       rect: buttonEl.getBoundingClientRect(),
     })}
 >
-  <Symbol />
+  <Symbol picture={food.picture} />
   <span class="name">{food.foodName}</span>
 </button>
 

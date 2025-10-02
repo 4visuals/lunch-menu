@@ -12,6 +12,25 @@ export type IPicSource = {
   fingerprint: string | null;
 };
 
+export interface WordInsertResult {
+  success: boolean;
+  picSeq: number;
+  word: string;
+  orderNum?: number;
+  cause?: string;
+}
+
+export interface WordBasket {
+  seq: number;
+  basketName: string;
+  generatedTime: number;
+  pictures: any[];
+}
+export interface BatchInsertResponse {
+  results: WordInsertResult[];
+  count: number;
+}
+
 export class PicSource {
   constructor(readonly dto: IPicSource) {}
 

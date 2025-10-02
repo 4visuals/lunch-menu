@@ -1,14 +1,28 @@
 <script lang="ts">
-  export let src = "/je6.jpg";
-  export let alt = "food symbol";
+  import type { PicSource } from "../api/gream-type";
+
+  // export let src = "/je6.jpg";
+  // export let alt = "food symbol";
   export let width = "100px";
+  export let picture: PicSource | undefined = undefined;
+
+  function getImageUrl(picture?: PicSource) {
+    return picture ? picture.getUrl() : "/empty_img.svg";
+  }
+  function getAlt(picture?: PicSource) {
+    return picture ? picture.wordName : "입력";
+  }
 </script>
 
-<div class="symbol" style="width: {width}; height: {width};" on:click>
-  <img {src} {alt} />
-</div>
+<button class="nude symbol" style="width: {width}; height: {width};" on:click>
+  <img src={getImageUrl(picture)} alt={getAlt(picture)} />
+</button>
 
 <style lang="scss">
+  .nude {
+    outline: none;
+    border: 1px solid transparent;
+  }
   .symbol {
     display: inline-block;
     vertical-align: middle;
