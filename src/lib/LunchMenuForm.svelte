@@ -8,13 +8,14 @@
   import FoodSymbol from "./symbol/FoodSymbol.svelte";
   import FoodSymbolEditor from "./FoodSymbolEditor.svelte";
   import { get, writable, type Writable } from "svelte/store";
-  import { onMount, onDestroy } from "svelte";
-  import { PicSource, type IPicSource } from "./api/gream-type";
+  import { onMount, onDestroy, createEventDispatcher } from "svelte";
+  import { PicSource } from "./api/gream-type";
   import { greamApi } from "./api/gream-api";
   import Modal from "./component/Modal.svelte";
   import SymbolCaptureForm from "./component/SymbolCaptureForm.svelte";
 
   export let menuData: MonthlyMenuDto;
+  const dispatch = createEventDispatcher<{ created: MonthlyMenu }>();
   let activeFood: FoodData | undefined = undefined;
   let height: string = "120px";
   let floatingMenuElement: HTMLDivElement;
@@ -132,6 +133,7 @@
     const pictures = monthlyMenu.toDailyPictures();
     const basket = await greamApi.createWorkdBook($monthlyMenu.name);
     await greamApi.insertPictures(basket.seq, pictures);
+    dispatch("created", monthlyMenu);
   }
 </script>
 

@@ -7,7 +7,9 @@
   }>();
   export let dailyMenu: DailyMenu;
   export let food: FoodData;
-  export let activeFood: FoodData | undefined;
+  export let activeFood: FoodData | undefined = undefined;
+  export let symbolSize: string = "100px";
+  export let foodNameVisible: boolean = true;
   let buttonEl: HTMLButtonElement;
 </script>
 
@@ -20,8 +22,10 @@
       rect: buttonEl.getBoundingClientRect(),
     })}
 >
-  <Symbol picture={food.picture} />
-  <span class="name">{food.foodName}</span>
+  <Symbol picture={food.picture} width={symbolSize} />
+  {#if foodNameVisible}
+    <span class="name">{food.foodName}</span>
+  {/if}
 </button>
 
 <style lang="scss">
@@ -29,6 +33,7 @@
     position: relative;
     border: none;
     background-color: transparent;
+    padding: 0;
     &.active {
       border-radius: 8px;
       box-shadow: 0 0 0 2px #007bff;

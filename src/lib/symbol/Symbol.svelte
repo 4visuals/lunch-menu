@@ -7,10 +7,10 @@
   export let picture: PicSource | undefined = undefined;
 
   function getImageUrl(picture?: PicSource) {
-    return picture ? picture.getUrl() : "/empty_img.svg";
+    return picture && picture.dto ? picture.getUrl() : "/empty_img.svg";
   }
   function getAlt(picture?: PicSource) {
-    return picture ? picture.wordName : "입력";
+    return picture && picture.dto ? picture.wordName : "입력";
   }
 </script>
 
@@ -22,6 +22,7 @@
   .nude {
     outline: none;
     border: 1px solid transparent;
+    padding: 0;
   }
   .symbol {
     display: inline-block;

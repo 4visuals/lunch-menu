@@ -5,10 +5,22 @@ import {
   type IPicSource,
   type WordBasket,
 } from "./gream-type";
+import { menu202510 } from "./dummy-202510";
+import { MonthlyMenu, type MonthlyMenuDto } from "../daily-menu";
 
 export class GreamApi {
   constructor(private backendUrl: string) {
     console.log("[backend]", backendUrl);
+  }
+  fetchLunchMenu(yyyyMM: string) {
+    menu202510.menus.forEach((m) => {
+      m.menus.forEach((elem) => {
+        //@ts-ignore
+        elem.picture = new PicSource(elem.picture?.dto as IPicSource);
+      });
+    });
+    const menu = new MonthlyMenu(menu202510 as MonthlyMenuDto);
+    return Promise.resolve(menu);
   }
   /**
    * 그림한글에서 이미지 검색
