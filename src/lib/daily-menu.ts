@@ -1,26 +1,26 @@
-import { writable, type Writable } from "svelte/store";
-import { SvelteStore } from "./store/svelte-store";
-import { PicSource, type IPicSource } from "./api/gream-type";
+import { writable, type Writable } from 'svelte/store'
+import { SvelteStore } from './store/svelte-store'
+import { PicSource, type IPicSource } from './api/gream-type'
 
 export type FoodData = {
   /**
    * 그림한글 상징 이미지PK
    *
    */
-  picture?: PicSource;
-  uuid: string;
-  foodName: string;
-};
+  picture?: PicSource
+  uuid: string
+  foodName: string
+}
 export type DailyMenu = {
-  day: number;
-  dayOfWeek: string;
-  menus: FoodData[];
-};
+  day: number
+  dayOfWeek: string
+  menus: FoodData[]
+}
 export type MonthlyMenuDto = {
-  year: number;
-  month: number;
-  menus: DailyMenu[];
-};
+  year: number
+  month: number
+  menus: DailyMenu[]
+}
 
 const dateImageMap: Record<number, { picSeq: number }> = {
   0: { picSeq: 2640 },
@@ -55,7 +55,7 @@ const dateImageMap: Record<number, { picSeq: number }> = {
   29: { picSeq: 2669 },
   30: { picSeq: 2670 },
   31: { picSeq: 2671 },
-};
+}
 export class MonthlyMenu extends SvelteStore<MonthlyMenu> {
   bindFood(
     dailyMenu: DailyMenu,
@@ -66,73 +66,79 @@ export class MonthlyMenu extends SvelteStore<MonthlyMenu> {
     if (flushAll) {
       const sameMenus = this.findSameMenuByName(
         dailyMenu.menus[weekIndex].foodName
-      );
+      )
       for (const menu of sameMenus) {
-        menu.picture = picture;
+        menu.picture = picture
       }
     } else {
-      dailyMenu.menus[weekIndex].picture = picture;
+      dailyMenu.menus[weekIndex].picture = picture
     }
-    this.update(); // call to reactivity
+    this.update() // call to reactivity
   }
-  protected store: Writable<MonthlyMenu>;
-  private _menuCache = new Map<string, FoodData[]>();
+  protected store: Writable<MonthlyMenu>
+  private _menuCache = new Map<string, FoodData[]>()
   constructor(readonly dto: MonthlyMenuDto) {
-    super();
-    this.store = writable(this);
+    super()
+    this.store = writable(this)
   }
   get name(): string {
-    return `${this.dto.year}년${this.dto.month}월메뉴`;
+    return `${this.dto.year}년${this.dto.month}월메뉴`
   }
   get year() {
-    return this.dto.year;
+    return this.dto.year
   }
   get month() {
-    return this.dto.month;
+    return this.dto.month
   }
   get menus() {
-    return this.dto.menus;
+    return this.dto.menus
   }
   get total() {
     return this.dto.menus.reduce(
       (acc, dailyMenu) => acc + dailyMenu.menus.length,
       0
-    );
+    )
+  }
+  /**
+   * returns 'YYYYMM'
+   */
+  get ymText() {
+    return `${this.year}${String(this.month).padStart(2, '0')}`
   }
   get countOfEmpty() {
     return this.dto.menus.reduce(
       (acc, dailyMenu) =>
         acc + dailyMenu.menus.filter((menu) => !menu.picture).length,
       0
-    );
+    )
   }
   get distinctMenus() {
-    const seen = new Set<string>();
-    const distinct: FoodData[] = [];
+    const seen = new Set<string>()
+    const distinct: FoodData[] = []
     for (const dailyMenu of this.dto.menus) {
       for (const menu of dailyMenu.menus) {
         if (!seen.has(menu.foodName)) {
-          seen.add(menu.foodName);
-          distinct.push(menu);
+          seen.add(menu.foodName)
+          distinct.push(menu)
         }
       }
     }
-    return distinct;
+    return distinct
   }
   findSameMenuByName(foodName: string) {
     if (this._menuCache.has(foodName)) {
-      return this._menuCache.get(foodName) ?? [];
+      return this._menuCache.get(foodName) ?? []
     }
-    const result: FoodData[] = [];
+    const result: FoodData[] = []
     for (const dailyMenu of this.dto.menus) {
       for (const menu of dailyMenu.menus) {
         if (menu.foodName === foodName) {
-          result.push(menu);
+          result.push(menu)
         }
       }
     }
-    this._menuCache.set(foodName, result);
-    return result;
+    this._menuCache.set(foodName, result)
+    return result
   }
   /**
    * 주간 메뉴를 앞에 "날짜 요일"을 하나로 포함해서 전송함
@@ -141,10 +147,10 @@ export class MonthlyMenu extends SvelteStore<MonthlyMenu> {
   toDailyPictures() {
     const pictures = this.menus
       .flatMap((daily) => {
-        daily.day;
-        const picName = `${daily.day}일 ${daily.dayOfWeek}`; // '3일 목요일'
-        const picSeq = dateImageMap[daily.day].picSeq;
-        const menus = [...daily.menus];
+        daily.day
+        const picName = `${daily.day}일 ${daily.dayOfWeek}` // '3일 목요일'
+        const picSeq = dateImageMap[daily.day].picSeq
+        const menus = [...daily.menus]
         menus.unshift({
           foodName: picName,
           uuid: crypto.randomUUID(),
@@ -152,20 +158,20 @@ export class MonthlyMenu extends SvelteStore<MonthlyMenu> {
             picSeq,
             wordName: picName,
           } as IPicSource),
-        });
-        return menus;
+        })
+        return menus
       })
       // .flatMap((menu) => menu.menus)
       .map((food) => {
-        const { picture } = food;
+        const { picture } = food
         return picture
           ? picture
           : new PicSource({
               picSeq: -1,
               wordName: food.foodName,
-            } as IPicSource);
-      });
+            } as IPicSource)
+      })
 
-    return pictures;
+    return pictures
   }
 }

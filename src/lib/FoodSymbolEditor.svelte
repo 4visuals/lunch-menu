@@ -1,46 +1,59 @@
 <script lang="ts">
-  import { createEventDispatcher, onMount } from "svelte";
-  import type { FoodData } from "./daily-menu";
-  import Symbol from "./symbol/Symbol.svelte";
-  import { greamApi } from "./api/gream-api";
-  import { writable, type Writable } from "svelte/store";
-  import type { PicSource } from "./api/gream-type";
-  export let food: FoodData;
-  export let weekIndex: number;
-  export let flushAll: boolean;
-  export let sameMenus: FoodData[] = [];
+  import { createEventDispatcher, onMount } from 'svelte'
+  import type { FoodData } from './daily-menu'
+  import Symbol from './symbol/Symbol.svelte'
+  import { greamApi } from './api/gream-api'
+  import { writable, type Writable } from 'svelte/store'
+  import type { PicSource } from './api/gream-type'
+  export let food: FoodData
+  export let weekIndex: number
+  export let flushAll: boolean
+  export let sameMenus: FoodData[] = []
+  let inputEl: HTMLInputElement
   const dispatch = createEventDispatcher<{
-    close: void;
-    choose: { picture: PicSource; weekIndex: number };
-    "flush-state": boolean;
-    "add-picture": void;
-  }>();
-  const close = () => dispatch("close");
+    close: void
+    choose: { picture: PicSource; weekIndex: number }
+    'flush-state': boolean
+    'add-picture': void
+  }>()
+  const close = () => dispatch('close')
 
-  const images: Writable<PicSource[]> = writable([]);
+  const images: Writable<PicSource[]> = writable([])
   async function searchSymbol(keyword: string) {
-    $images = [];
-    const symbols = await greamApi.searchSymbol(keyword);
-    $images = symbols;
+    $images = []
+    const symbols = await greamApi.searchSymbol(keyword)
+    $images = symbols
   }
 
   function flush(e: Event) {
-    dispatch("flush-state", (e.target as HTMLInputElement)!.checked);
+    dispatch('flush-state', (e.target as HTMLInputElement)!.checked)
   }
-  $: searchSymbol(food.foodName);
+  const searchByInput = (e: Event) => {
+    const { value } = inputEl
+    if (!value.trim()) {
+      return
+    }
+    searchSymbol(value.trim())
+  }
+  $: searchSymbol(food.foodName)
 
   function symbolClicked(picture: PicSource): void {
-    dispatch("choose", { picture, weekIndex });
+    dispatch('choose', { picture, weekIndex })
   }
 </script>
 
-<svelte:window on:keydown={(e) => e.key === "Escape" && close()} />
+<svelte:window on:keydown={(e) => e.key === 'Escape' && close()} />
 
 <div class="symbol-picker">
   <div class="form-row">
     <div class="desc-input">
-      <input type="text" class="form-control" value={food.foodName} />
-      <button class="btn btn-primary">Search</button>
+      <input
+        type="text"
+        class="form-control"
+        value={food.foodName}
+        bind:this={inputEl}
+      />
+      <button class="btn btn-primary" on:click={searchByInput}>Search</button>
     </div>
   </div>
   <div class="same-menus">
@@ -66,7 +79,7 @@
     {/each}
     <button
       class="imgGroup reg-symbol"
-      on:click={() => dispatch("add-picture")}
+      on:click={() => dispatch('add-picture')}
     >
       <span class="center-icon material-icons">add</span>
     </button>

@@ -1,23 +1,53 @@
 <script lang="ts">
-  import { createEventDispatcher } from "svelte";
-  import { convertToYMD } from "./util";
+  import { createEventDispatcher } from 'svelte'
+  import { convertToYMD } from './util'
+  import { greamApi } from './api/gream-api'
 
-  export let time: Date;
+  export let time: Date
 
   const dispatch = createEventDispatcher<{
-    add: void;
-    ymd: [number, number, number];
-  }>();
+    add: void
+    ymd: [number, number, number]
+  }>()
 
-  $: ymd = convertToYMD(time);
-  $: date = `${ymd[0]}-${String(ymd[1]).padStart(2, "0")}-${String(
-    ymd[2]
-  ).padStart(2, "0")}`;
+  function dummyLogin() {
+    // http://localhost:8080/aacweb/loginSubmit POST
+    // userID=dummy&userPassword=8801
+    fetch('http://localhost:8080/aacweb/loginSubmit', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      credentials: 'include',
+      body: new URLSearchParams({
+        userID: 'dummy',
+        userPassword: '8801',
+      }),
+    })
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error(`HTTP error! Status: ${response.status}`)
+        }
+        return response.json() // 또는 response.text()
+      })
+      .then((data) => {
+        console.log('서버 응답:', data)
+        greamApi.fetchLunchMenu('')
+      })
+      .catch((err) => {
+        console.error('요청 실패:', err)
+      })
+  }
+
+  $: ymd = convertToYMD(time)
+  $: date = `${ymd[0]}-${String(ymd[1]).padStart(2, '0')}-${String(
+    ymd[2],
+  ).padStart(2, '0')}`
 
   function handleDateChange(event: Event) {
-    const target = event.currentTarget as HTMLInputElement;
-    const [year, month, day] = target.value.split("-").map(Number);
-    dispatch("ymd", [year, month, day]);
+    const target = event.currentTarget as HTMLInputElement
+    const [year, month, day] = target.value.split('-').map(Number)
+    dispatch('ymd', [year, month, day])
   }
 </script>
 
@@ -35,9 +65,10 @@
       <span class="navbar-brand h1 mb-0">오늘의 급식</span>
     </div>
     <div class="navbar-nav">
-      <button class="btn btn-primary" on:click={() => dispatch("add")}
+      <button class="btn btn-primary" on:click={() => dispatch('add')}
         >메뉴 추가</button
       >
+      <button class="btn btn-primary" on:click={dummyLogin}>login</button>
     </div>
   </div>
 </nav>

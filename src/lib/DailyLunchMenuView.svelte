@@ -1,32 +1,37 @@
 <script lang="ts">
-  import type { DailyMenu, MonthlyMenu } from "./daily-menu";
-  import FoodSymbol from "./symbol/FoodSymbol.svelte";
-  import viewImg from "../assets/icons/view_image.svg";
-  import viewText from "../assets/icons/view_text.svg";
+  import type { DailyMenu, MonthlyMenu } from './daily-menu'
+  import FoodSymbol from './symbol/FoodSymbol.svelte'
+  import viewImg from '../assets/icons/view_image.svg'
+  import viewText from '../assets/icons/view_text.svg'
+  import { greamApi } from './api/gream-api'
 
-  export let ymd: [number, number, number];
-  export let menu: MonthlyMenu | undefined;
+  export let ymd: [number, number, number]
+  export let menu: MonthlyMenu | undefined
 
-  let todayMenu: DailyMenu;
+  let todayMenu: DailyMenu
 
   function bindCurrentMenu(
     menu: MonthlyMenu | undefined,
-    ymd: [number, number, number]
+    ymd: [number, number, number],
   ) {
     if (menu) {
-      const found = menu.menus.find((elem) => elem.day === ymd[2]);
+      const found = menu.menus.find((elem) => elem.day === ymd[2])
       if (!found) {
-        console.error("no daily menu for ", ymd);
-        return;
+        console.error('no daily menu for ', ymd)
+        return
       }
-      todayMenu = found;
-      console.log("[today]", todayMenu);
+      todayMenu = found
+      console.log('[today]', todayMenu)
     }
   }
-  $: bindCurrentMenu(menu, ymd);
+  $: bindCurrentMenu(menu, ymd)
 </script>
 
-<section style="background-image: url(/tray_800.png)">
+<section
+  style="background-image: url({greamApi.resolvePublicImagePath(
+    '/tray_800.png',
+  )})"
+>
   {#if menu}
     <div class="food side p0">
       <div class="food-pic">

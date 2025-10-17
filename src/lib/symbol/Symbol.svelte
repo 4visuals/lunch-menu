@@ -1,16 +1,19 @@
 <script lang="ts">
-  import type { PicSource } from "../api/gream-type";
+  import { greamApi } from '../api/gream-api'
+  import type { PicSource } from '../api/gream-type'
 
   // export let src = "/je6.jpg";
   // export let alt = "food symbol";
-  export let width = "100px";
-  export let picture: PicSource | undefined = undefined;
+  export let width = '100px'
+  export let picture: PicSource | undefined = undefined
 
   function getImageUrl(picture?: PicSource) {
-    return picture && picture.dto ? picture.getUrl() : "/empty_img.svg";
+    return picture && picture.dto
+      ? picture.getUrl()
+      : greamApi.resolvePublicImagePath('/empty_img.svg')
   }
   function getAlt(picture?: PicSource) {
-    return picture && picture.dto ? picture.wordName : "입력";
+    return picture && picture.dto ? picture.wordName : '입력'
   }
 </script>
 

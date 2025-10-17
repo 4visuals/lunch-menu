@@ -4,137 +4,148 @@
     type DailyMenu,
     type FoodData,
     type MonthlyMenuDto,
-  } from "./daily-menu";
-  import FoodSymbol from "./symbol/FoodSymbol.svelte";
-  import FoodSymbolEditor from "./FoodSymbolEditor.svelte";
-  import { get, writable, type Writable } from "svelte/store";
-  import { onMount, onDestroy, createEventDispatcher } from "svelte";
-  import { PicSource } from "./api/gream-type";
-  import { greamApi } from "./api/gream-api";
-  import Modal from "./component/Modal.svelte";
-  import SymbolCaptureForm from "./component/SymbolCaptureForm.svelte";
+  } from './daily-menu'
+  import FoodSymbol from './symbol/FoodSymbol.svelte'
+  import FoodSymbolEditor from './FoodSymbolEditor.svelte'
+  import { get, writable, type Writable } from 'svelte/store'
+  import { onMount, onDestroy, createEventDispatcher } from 'svelte'
+  import { PicSource } from './api/gream-type'
+  import { greamApi } from './api/gream-api'
+  import Modal from './component/Modal.svelte'
+  import SymbolCaptureForm from './component/SymbolCaptureForm.svelte'
 
-  export let menuData: MonthlyMenuDto;
-  const dispatch = createEventDispatcher<{ created: MonthlyMenu }>();
-  let activeFood: FoodData | undefined = undefined;
-  let height: string = "120px";
-  let floatingMenuElement: HTMLDivElement;
+  export let menuData: MonthlyMenuDto
+  const dispatch = createEventDispatcher<{ created: MonthlyMenu }>()
+  let activeFood: FoodData | undefined = undefined
+  let height: string = '120px'
+  let floatingMenuElement: HTMLDivElement
 
-  const monthlyMenu = new MonthlyMenu(menuData);
+  const monthlyMenu = new MonthlyMenu(menuData)
 
   const floatingMenu: Writable<{
-    left: string;
-    top: string;
-    dailyMenu: DailyMenu;
-    weekIndex: number;
-    visible: boolean;
+    left: string
+    top: string
+    dailyMenu: DailyMenu
+    weekIndex: number
+    visible: boolean
     /**
      * 모두 적용 여부
      */
-    flushAll: boolean;
+    flushAll: boolean
   }> = writable({
-    left: "",
-    top: "",
+    left: '',
+    top: '',
     dailyMenu: {} as DailyMenu,
     weekIndex: -1,
     visible: false,
     flushAll: false,
-  });
+  })
 
-  const captureForm: Writable<{ visible: boolean }> = writable({
-    visible: false,
-  });
+  const captureForm: Writable<{ visible: boolean; keyword: string }> = writable(
+    {
+      visible: false,
+      keyword: 'ss',
+    },
+  )
 
   $: if ($floatingMenu.visible && floatingMenuElement) {
-    const menuRect = floatingMenuElement.getBoundingClientRect();
-    const windowWidth = window.innerWidth;
-    const currentLeft = parseFloat($floatingMenu.left);
+    const menuRect = floatingMenuElement.getBoundingClientRect()
+    const windowWidth = window.innerWidth
+    const currentLeft = parseFloat($floatingMenu.left)
 
     if (currentLeft + menuRect.width > windowWidth) {
-      const newLeft = windowWidth - menuRect.width - 16; // 16px padding
-      $floatingMenu.left = `${newLeft < 0 ? 0 : newLeft}px`;
+      const newLeft = windowWidth - menuRect.width - 16 // 16px padding
+      $floatingMenu.left = `${newLeft < 0 ? 0 : newLeft}px`
     }
   }
 
   function hideFloatingMenu() {
     floatingMenu.update((store) => {
-      store.visible = false;
-      store.left = "";
-      store.top = "";
-      return store;
-    });
+      store.visible = false
+      store.left = ''
+      store.top = ''
+      return store
+    })
   }
   function showFoodEditor(
     e: CustomEvent<{ food: FoodData; rect: DOMRect }>,
     dailyMenu: DailyMenu,
-    weekIndex: number
+    weekIndex: number,
   ) {
-    const { food, rect } = e.detail;
-    activeFood = food;
-    $floatingMenu.dailyMenu = dailyMenu;
-    $floatingMenu.weekIndex = weekIndex;
-    $floatingMenu.left = `${rect.left}px`;
-    $floatingMenu.top = `${rect.bottom + window.scrollY + 8}px`;
-    $floatingMenu.visible = true;
+    const { food, rect } = e.detail
+    activeFood = food
+    $floatingMenu.dailyMenu = dailyMenu
+    $floatingMenu.weekIndex = weekIndex
+    $floatingMenu.left = `${rect.left}px`
+    $floatingMenu.top = `${rect.bottom + window.scrollY + 8}px`
+    $floatingMenu.visible = true
+    $captureForm.keyword = food.foodName
   }
   function handleClickOutside(event: MouseEvent) {
     if (
       floatingMenuElement &&
       !floatingMenuElement.contains(event.target as Node)
     ) {
-      hideFloatingMenu();
+      hideFloatingMenu()
     }
   }
   function bindFoodPicture(picture: PicSource, weekIndex: number) {
     // console.log($floatingMenu.dailyMenu.dayOfWeek, pic, weekIndex);
-    const { dailyMenu, flushAll } = get(floatingMenu);
-    monthlyMenu.bindFood(dailyMenu, weekIndex, picture, flushAll);
+    const { dailyMenu, flushAll } = get(floatingMenu)
+    monthlyMenu.bindFood(dailyMenu, weekIndex, picture, flushAll)
   }
 
   function updateFlush(flushAll: boolean) {
     floatingMenu.update((store) => {
-      store.flushAll = flushAll;
-      return store;
-    });
+      store.flushAll = flushAll
+      return store
+    })
   }
   async function startAutoPictureProcedure() {
-    const menus = monthlyMenu.distinctMenus;
+    const menus = monthlyMenu.distinctMenus
     for (const menu of menus) {
       if (menu.picture) {
-        continue;
+        continue
       }
-      const symbols = await greamApi.searchSymbol(menu.foodName);
+      const symbols = await greamApi.searchSymbol(menu.foodName)
       if (symbols.length > 0) {
-        const sameMenus = monthlyMenu.findSameMenuByName(menu.foodName);
+        const sameMenus = monthlyMenu.findSameMenuByName(menu.foodName)
         for (const sameMenu of sameMenus) {
-          sameMenu.picture = symbols[0];
-          monthlyMenu.update();
+          sameMenu.picture = symbols[0]
+          monthlyMenu.update()
         }
       }
-      await new Promise((resolve) => setTimeout(resolve, 200));
+      await new Promise((resolve) => setTimeout(resolve, 200))
     }
-    monthlyMenu.update();
+    monthlyMenu.update()
   }
   function showCaptureForm() {
     captureForm.update((form) => {
-      form.visible = true;
-      return form;
-    });
+      form.visible = true
+      return form
+    })
+  }
+  async function uploadMonthlyMenu() {
+    const pictures = monthlyMenu.toDailyPictures()
+    const { name, ymText } = $monthlyMenu
+    const menu = await greamApi.createWorkdBook(name, ymText)
+    await greamApi.insertPictures(menu.wordBasketRef, pictures)
+    dispatch('created', monthlyMenu)
+  }
+  async function uploadAndBindPicture(
+    e: CustomEvent<{ dataUrl: string; keyword: string }>,
+  ) {
+    const { dataUrl, keyword } = e.detail
+    const pic = await greamApi.uploadSymbol(dataUrl, keyword)
+    bindFoodPicture(pic, $floatingMenu.weekIndex)
   }
   onMount(() => {
-    document.addEventListener("click", handleClickOutside, true);
-  });
+    document.addEventListener('click', handleClickOutside, true)
+  })
 
   onDestroy(() => {
-    document.removeEventListener("click", handleClickOutside, true);
-  });
-
-  async function uploadMonthlyMenu() {
-    const pictures = monthlyMenu.toDailyPictures();
-    const basket = await greamApi.createWorkdBook($monthlyMenu.name);
-    await greamApi.insertPictures(basket.seq, pictures);
-    dispatch("created", monthlyMenu);
-  }
+    document.removeEventListener('click', handleClickOutside, true)
+  })
 </script>
 
 <div class="container-fluid table-wrapper">
@@ -207,7 +218,10 @@
 {/if}
 {#if $captureForm.visible}
   <Modal showModal={true}>
-    <SymbolCaptureForm />
+    <SymbolCaptureForm
+      keyword={$captureForm.keyword}
+      on:upload={uploadAndBindPicture}
+    />
   </Modal>
 {/if}
 
